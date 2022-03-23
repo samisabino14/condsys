@@ -1,0 +1,40 @@
+{% extends "layout_auth.html" %}
+{% block title %} Início {% endblock %}
+
+{% block body %}
+
+<br>
+<br>
+<br>
+<br>
+<br>
+
+{% if email %}
+
+<h3>WELCOME, {{email}} </h3>
+
+<br>
+<br>
+<br><br>
+
+
+
+{% else %}
+
+{% endif %}
+
+<h1>AUTH</h1>
+
+{{request.session}}
+
+<button><a href="{% url 'register_auth'%} ">Register auth</a></button>
+<button><a href="{% url 'logout_auth'%} ">Logout</a></button>
+<!-- <button><a href="{% url 'upload_file'%} ">Update file</a></button> -->
+
+
+<br>
+<br>
+<br>
+<br>
+
+{% endblock %}
