@@ -3,20 +3,47 @@
 
 {% block body %}
 
-<br>
-<br>
-<br>
-<br>
+<h1>REGISTER AUTH</h1>
+
+<form action="{% url 'register_auth' %}" method="POST">
+
+    {% if message %}
+
+    <div class="msg_error">
+        <p> {{message}} </p>
+    </div>
+
+    {% endif %}
+
+    {% csrf_token %}
+
+    <div class="form">
+
+        <div class="email">
+            <input type="email" name="email" id="email" placeholder="Email" required>
+        </div>
+
+        <div class="password">
+            <input type="password" name="password" id="password" placeholder="Password" required>
+        </div>
+
+        <div class="password">
+            <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirmar Password"
+                required>
+        </div>
+
+        <div class="submit">
+            <input type="submit" value="Entrar">
+        </div>
 <br>
 
-<h1>REGISTER NEW AUTH</h1>
+    </div>
 
-<button><a href="{% url 'index_auth'%} ">Voltar</a></button>
+</form>
 
 
-<br>
-<br>
-<br>
-<br>
+<div class="previous">
+    <a href="{% url 'index_auth' %}">Voltar</a>
+</div>
 
 {% endblock %}

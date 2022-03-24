@@ -1,10 +1,10 @@
-
 import pyrebase
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # FIREBASE
 
@@ -19,13 +19,11 @@ firebaseConfig = {
     'measurementId': "G-9XQXM8PS9X"
 }
 
-
 firebase = pyrebase.initialize_app(firebaseConfig)
 
 db = firebase.database()
 auth = firebase.auth()
 storage = firebase.storage()
-
 
 persons_ref = db.child('person').get()
 tokens_ref = db.child('tokens').get()
@@ -33,55 +31,90 @@ users_ref = db.child('users').get()
 
 # Create your views here.
 
+email_manager = 'samisabino14@hotmail.com'
+
 
 def index_auth(request):
 
-    email = request.POST.get('email')
-    password = request.POST.get('password')
+    if request.method == 'POST':
 
-    try:
-        user = auth.sign_in_with_email_and_password(email, password)
-    
-    except:
-        message = "Invalid Credentials! Please Check your Data"
-        return render(request, "login_auth.html", {"message": message})
+        email = request.POST.get('email')
+        password = request.POST.get('password')
 
-    request.session = user
-    print(request.session)
+        try:
+            user = auth.sign_in_with_email_and_password(email, password)
 
-    login(request, user)
+        except:
+            message = "Credenciais inválidas. Verifique os seus dados."
+            return render(request, "login_auth.html", {"message": message})
 
-    return render(request, "auth.html", {"email": email})
+        id_session = user['idToken']
+        request.session['uid'] = str(id_session)
+
+        idToken = request.session['uid']
+        user_info = auth.get_account_info(idToken)
+        user_info = user_info['users']
+        user_info = user_info[0]
+
+        return render(request, "auth.html", {
+            "user_info": user_info,
+            'email_manager': email_manager
+        })
+
+    elif request.method == 'GET':
+        return HttpResponseRedirect(reverse('login_auth'))
 
 
 def login_auth(request):
+
     return render(request, 'login_auth.html')
 
 
 def register_auth(request):
 
+    idToken = request.session['uid']
+    user_info = auth.get_account_info(idToken)
+    user_info = user_info['users']
+    user_info = user_info[0]
+
     if request.method == 'POST':
 
-        email = input('Email: ')
-        password = input('Password: ')
-        confirm_password = input('Confirm Password: ')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
 
-        if password == confirm_password:
+        if password != confirm_password:
+            return render(request, 'register_auth.html', {
+                'message': 'Passwords não coincidem. Tente novamente!'
+            })
 
-            try:
-                auth.create_user_with_email_and_password(email, password)
-                print('User created successfully')
-                return HttpResponseRedirect(reverse('index_auth'))
+        try:
+            success = auth.create_user_with_email_and_password(
+                email, password)
 
-            except:
-                print('Email exists')
-                return HttpResponseRedirect(reverse('register_auth'))
+        except:
+            return render(request, 'register_auth.html', {
+                'message': 'Email existente. Tente outro!'
+            })
 
-        else:
-            print('Password differs')
-            return HttpResponseRedirect(reverse('register_auth'))
+        print(f"Informação: {str(user_info)}")
 
-    return render(request, 'register_auth.html')
+        if success:
+
+            return HttpResponseRedirect(reverse('index_auth'))
+
+            """ return render(request, 'auth.html', {
+                'message': 'Admin criado com sucesso',
+                "user_info": user_info,
+                'email_manager': email_manager
+
+            }) """
+
+    return render(request, "register_auth.html", {
+        "user_info": user_info,
+        'email_manager': email_manager
+
+    })
 
 
 def upload_file(request):
@@ -102,14 +135,45 @@ def upload_file(request):
     return render(request, 'upload_file.html')
 
 
-def update_user(request, id_user):
+def view_users(request):
+
+    user_data = []
+
+    for user in users_ref.each():
+        user_data.append(user.val())
+
+    return render(request, 'view_users.html', {
+
+        'users': user_data
+    })
+
+
+def view_user_by_id(request, id_user):
+
+    person_data = []
+    user_data = []
 
     for person in persons_ref.each():
         for user in users_ref.each():
 
             if person.val()['id'] == id_user:
-                #print(person.val()['first_name'])
-                #print(person.key())
+                person_data = person.val()
+
+            if user.val()['id'] == id_user:
+                user_data = user.val()
+
+    return render(request, 'view_user_by_id.html', {
+
+        'user_data': user_data,
+        'person_data': person_data,
+    })
+
+
+def update_user(request, id_user):
+
+    for person in persons_ref.each():
+        for user in users_ref.each():
+            if person.val()['id'] == id_user:
 
                 db.child('person').child(person.key()).update({
                     'first_name': 'Sami',
@@ -127,22 +191,32 @@ def update_user(request, id_user):
 
 def delete_user(request, id_user):
 
+    idToken = request.session['uid']
+    user_info = auth.get_account_info(idToken)
+    user_info = user_info['users']
+    user_info = user_info[0]
+
     for user in users_ref.each():
 
         if user.val()['id'] == id_user:
 
-            print(db.child('person').child(user.val()['id']))
+            db.child('users').child(user.key()).remove()
 
-            return HttpResponseRedirect(reverse('index'))
+            print('Successfully deleted user')
 
-    return render(request, 'delete_user.html')
+            return render(request, 'auth.html', {
+                "user_info": user_info,
+                'email_manager': email_manager,
+                'message': 'Utilizador removido com sucesso',
+            })
 
 
 def logout_auth(request):
 
     try:
         del request.session['uid']
+
     except:
         pass
 
-    return render(request, 'index.html')
+    return HttpResponseRedirect(reverse('login_auth'))

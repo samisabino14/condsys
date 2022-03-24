@@ -10,16 +10,42 @@
 
 {%endif%}
 
-<br>
-<br>
-<br>
-<br>
-<h1>LOGIN</h1>
+<h1>LOGIN USER</h1>
+
+<form action="{% url 'index_auth' %}" method="POST">
+
+    {% if message %}
+
+    <div class="msg_error">
+        <p> {{message}} </p>
+    </div>
+
+    {% endif %}
+
+    {% csrf_token %}
+
+    <div class="form">
+        <br>
+        <div class="email">
+            <input type="email" name="email" id="email" placeholder="Email" required>
+        </div>
+        <br>
+        <div class="password">
+            <input type="password" name="password" id="password" placeholder="Password" required>
+        </div>
+        <br>
+        <div class="submit">
+            <input type="submit" value="Entrar">
+        </div>
+        <br>
+    </div>
+    </form>
+
+<div class="previous">
+    <a href="{% url 'index'%} ">Voltar</a>
+</div>
 
 
-
-<br>
-<br>
 <br>
 <br>
 {% endblock %}

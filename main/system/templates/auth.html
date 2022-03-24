@@ -3,38 +3,30 @@
 
 {% block body %}
 
-<br>
-<br>
-<br>
-<br>
-<br>
+{% if message %}
 
-{% if email %}
-
-<h3>WELCOME, {{email}} </h3>
-
-<br>
-<br>
-<br><br>
-
-
-
-{% else %}
+<div class="msg_error">
+    <p> {{message}} </p>
+</div>
 
 {% endif %}
 
-<h1>AUTH</h1>
+<h3>WELCOME, {{user_info.email}} </h3>
 
-{{request.session}}
 
-<button><a href="{% url 'register_auth'%} ">Register auth</a></button>
+{% if user_info.email == email_manager %}
+
+    <button><a href="{% url 'register_auth'%} ">Register administrador</a></button>
+
+{% else %}
+
+
+{% endif %}
+
+<button><a href="{% url 'view_users'%} ">Utilizadores</a></button>
+
 <button><a href="{% url 'logout_auth'%} ">Logout</a></button>
 <!-- <button><a href="{% url 'upload_file'%} ">Update file</a></button> -->
 
-
-<br>
-<br>
-<br>
-<br>
 
 {% endblock %}

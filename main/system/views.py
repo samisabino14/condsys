@@ -23,43 +23,112 @@ def login_view(request):
 
 def register_view(request):
 
-    uuid_user = str(uuid.uuid4())
+    if request.method == 'POST':
 
-    location = {
-        'province': 'Luanda',
-        'municipality': 'Luanda',
-        'community': 'Samba',
-        'neighborhood': 'Morro-Bento',
-        'street': 'Jackson Lar',
-        'house': 129
-    }
+        streets = {
+            0: 'Jorge Miguel',
+            1: 'Mangueiras',
+            2: 'Gurgel Santos'
+        }
 
-    person_data = {
-        'id': uuid_user,
-        'first_name': 'Sami',
-        'last_name': 'Sabino',
-        'age': 25,
-        'location': location,
-    }
+        uuid_user = str(uuid.uuid4())
 
-    user_data = {
-        'id': uuid_user,
-        'email': 'samisabino@gmail.com',
-        'password': generate_password_hash('123456', method='sha256')
-    }
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        birth_date = request.POST.get('birth_date')
 
-    # JWT authentication
-    """ token_user = str(jwt.encode({
-        'person_data': person_data,
-        'user_data': user_data,
-    },
+        street = request.POST.get('street')
+        house = request.POST.get('house')
 
-        'condsys_token'
-    )) """
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm_password')
 
-    db.child('person').push(person_data)
-    db.child('users').push(user_data)
-    #db.child('tokens').push(token_user)
+        designation = request.POST.get('designation')
+
+        if password != confirm_password:
+
+            password_error = 'As passwords não coincidem!'
+
+            return render(request, 'register.html', {
+                'message': password_error
+            })
+
+        else:
+
+            password_hash = generate_password_hash(password, method='sha256')
+            check_street = False
+
+            if designation == 'resident':
+                for i in streets:
+                    if street == streets[i]:
+                        check_street = True
+
+                if check_street:
+
+                    resident_data = {
+                        'id': uuid_user,
+                        'street': street,
+                        'house': house,
+                        'status': False
+                    }
+
+                    db.child('resident').push(resident_data)
+
+                else:
+                    street_not_exists = 'Essa rua não existe. Tente novamente ou consulte um funcionário do condomínio.'
+
+                    return render(request, 'register.html', {
+                        'message': street_not_exists
+                    })
+
+            elif designation == 'visitor':
+
+                visitor_data = {
+                    'id': uuid_user,
+                    'street': street,
+                    'house': house,
+                }
+
+                db.child('visitor').push(visitor_data)
+
+            """ location = {
+
+                'province': 'Luanda',
+                'municipality': 'Luanda',
+                'community': 'Samba',
+                'neighborhood': 'Morro-Bento',
+                'street': request.POST.get('street'),
+                'house': request.POST.get('house'),
+            } """
+
+            person_data = {
+
+                'id': uuid_user,
+                'first_name': first_name,
+                'last_name': last_name,
+                'birth_date': birth_date,
+                # 'location': location,
+            }
+
+            user_data = {
+                'id': uuid_user,
+                'email': email,
+                'password': password_hash
+            }
+
+            # JWT authentication
+            """ token_user = str(jwt.encode({
+                'person_data': person_data,
+                'user_data': user_data,
+            },
+
+                'condsys_token'
+            )) """
+
+            db.child('person').push(person_data)
+            db.child('users').push(user_data)
+            # db.child('tokens').push(token_user)
 
     return render(request, 'register.html')
 

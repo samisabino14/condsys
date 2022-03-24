@@ -5,21 +5,84 @@
 
 {%if error%}
 
-
 <h4>{{error}}</h4>
 
 {%endif%}
 
+<form action="{% url 'register_view' %}" method="POST">
+
+    {% if message %}
+
+    <div class="msg_error">
+        <p> {{message}} </p>
+    </div>
+
+    {% endif %}
+
+    {% csrf_token %}
+
+    <div class="form">
+
+        <div class="first_name">
+            <input type="text" name="first_name" id="first_name" placeholder="Primeiro nome" required>
+        </div>
+
+        <div class="last_name">
+            <input type="text" name="last_name" id="last_name" placeholder="Último nome" required>
+        </div>
+
+        <div class="birth_date">
+            <input type="date" name="birth_date" id="birth_date" placeholder="Data de nascimento" required>
+        </div>
+
+        <br><br>
+
+        <div class="street">
+            <input type="text" name="street" id="street" placeholder="Rua" required>
+        </div>
+
+        <div class="house">
+            <input type="number" name="house" id="house" placeholder="Número da casa" required>
+        </div>
+
+        <br><br>
+
+        <div class="email">
+            <input type="email" name="email" id="email" placeholder="Email" required>
+        </div>
+
+        <div class="password">
+            <input type="password" name="password" id="password" placeholder="Password" required>
+        </div>
+
+        <div class="password">
+            <input type="password" name="confirm_password" id="confirm_password" placeholder="Confirmar Password"
+                required>
+        </div>
+        <br><br>
+
+        <div class="designation">
+            <label for="cars">Escolha a tua designação:</label>
+
+            <select name="designation" id="designation">
+                <option value="resident">Residente</option>
+                <option value="visitor">Visitor</option>
+            </select>
+        </div>
+
+        <br><br>
+
+        <div class="submit">
+            <input type="submit" value="Cadastrar">
+        </div>
 <br>
-<br>
-<br>
-<br>
-<h1>REGISTER</h1>
+</div>
+
+</form>
 
 
+<div class="previous">
+    <a href="{% url 'index' %}">Voltar</a>
+</div>
 
-<br>
-<br>
-<br>
-<br>
 {% endblock %}

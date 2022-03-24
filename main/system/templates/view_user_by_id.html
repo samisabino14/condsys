@@ -1,0 +1,32 @@
+{% extends "layout_auth.html" %}
+{% block title %} Lista de utilizadores {% endblock %}
+
+{% block body %}
+
+
+
+
+{% if user_data %}
+
+{% if person_data %}
+
+<h1>Perfil de {{person_data.first_name}} {{person_data.last_name}}</h1>
+<p><strong>Email</strong>: {{user_data.email}}</p>
+<p><strong>Data de nascimento</strong>: {{person_data.birth_date}}</p>
+
+{% endif %}
+
+
+<button type="button"><a href="">Atualizar</a></button>
+
+<button class="btn_delete"><a href="{% url 'delete_user' user_data.id %} ">Remover</a></button>
+
+
+{% else %}
+
+<h3>Nenhum dado encontrado!</h3>
+
+{% endif %}
+
+
+{% endblock %}

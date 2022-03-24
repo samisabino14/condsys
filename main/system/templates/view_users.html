@@ -1,0 +1,24 @@
+{% extends "layout_auth.html" %}
+{% block title %} Lista de utilizadores {% endblock %}
+
+{% block body %}
+
+<h1>Utilizadores</h1>
+
+
+{% if users %}
+
+{% for user in users %}
+
+<p><a href="{% url 'view_user_by_id' user.id %}">{{user.email}}</a> </p>
+
+
+{% endfor %}
+
+{% else %}
+
+<h3>Nenhum dado encontrado!</h3>
+
+{% endif %}
+
+{% endblock %}
