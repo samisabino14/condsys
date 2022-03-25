@@ -3,16 +3,9 @@
 
 {% block body %}
 
-{%if error%}
-
-
-<h4>{{error}}</h4>
-
-{%endif%}
-
 <h1>LOGIN USER</h1>
 
-<form action="{% url 'index_auth' %}" method="POST">
+<form action="{% url 'users_view' %}" method="POST">
 
     {% if message %}
 

@@ -4,18 +4,33 @@
 {% block body %}
 
 
-
-
 {% if user_data %}
 
-{% if person_data %}
+    {% if person_data %}
 
-<h1>Perfil de {{person_data.first_name}} {{person_data.last_name}}</h1>
-<p><strong>Email</strong>: {{user_data.email}}</p>
-<p><strong>Data de nascimento</strong>: {{person_data.birth_date}}</p>
+        <h1>Perfil de {{person_data.first_name}} {{person_data.last_name}}</h1>
+        <p><strong>Email</strong>: {{user_data.email}}</p>
+        <p><strong>Data de nascimento</strong>: {{person_data.birth_date}}</p>
 
-{% endif %}
+        {% if resident_data %}
+        
+        <p><strong>Rua:</strong> {{resident_data.street}} </p>
+        <p><strong>Casa:</strong> {{resident_data.house}} </p>
+        
+        {% if resident_data.owner == True %}
+        
+        <p><strong>Dono de casa: </strong>Sim</p>
+        
+        {% else %}
+        
+        <button><a href=" {% url 'set_owner_residence' resident_data.id %} ">Definir como dono de casa</a></button>
+            {% endif %}
 
+        {% endif %}
+        
+        {% endif %}
+        
+        <br><br><br>
 
 <button type="button"><a href="">Atualizar</a></button>
 
@@ -24,9 +39,14 @@
 
 {% else %}
 
-<h3>Nenhum dado encontrado!</h3>
+<h3>Nenhum utilizador encontrado!</h3>
 
 {% endif %}
 
+
+<br><br><br>
+<div class="previous">
+    <button><a href="{% url 'view_users' %}">Voltar</a></button>
+</div>
 
 {% endblock %}

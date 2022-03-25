@@ -14,6 +14,10 @@ urlpatterns = [
     path('view_users/', views.view_users, name='view_users'),
     path('view_user_by_id/<str:id_user>/',
          views.view_user_by_id, name='view_user_by_id'),
+
+    path('set_owner_residence/<str:id_user>/', views.set_owner_residence,
+         name='set_owner_residence'),
+
     path('update_user/<str:id_user>/', views.update_user, name='update_user'),
     path('delete_user/<str:id_user>/', views.delete_user, name='delete_user'),
 

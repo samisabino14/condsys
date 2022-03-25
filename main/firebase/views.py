@@ -1,3 +1,4 @@
+import re
 import pyrebase
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
@@ -28,6 +29,9 @@ storage = firebase.storage()
 persons_ref = db.child('person').get()
 tokens_ref = db.child('tokens').get()
 users_ref = db.child('users').get()
+resident_ref = db.child('resident').get()
+visitor_ref = db.child('visitor').get()
+
 
 # Create your views here.
 
@@ -35,6 +39,25 @@ email_manager = 'samisabino14@hotmail.com'
 
 
 def index_auth(request):
+
+    if True:
+
+        idToken = request.session['uid']
+        user_info = auth.get_account_info(idToken)
+        user_info = user_info['users']
+        user_info = user_info[0]
+
+        if user_info:
+
+            return render(request, "auth.html", {
+                "user_info": user_info,
+                'email_manager': email_manager
+            })
+
+    return HttpResponseRedirect(reverse('login_auth'))
+
+
+def login_auth(request):
 
     if request.method == 'POST':
 
@@ -51,21 +74,6 @@ def index_auth(request):
         id_session = user['idToken']
         request.session['uid'] = str(id_session)
 
-        idToken = request.session['uid']
-        user_info = auth.get_account_info(idToken)
-        user_info = user_info['users']
-        user_info = user_info[0]
-
-        return render(request, "auth.html", {
-            "user_info": user_info,
-            'email_manager': email_manager
-        })
-
-    elif request.method == 'GET':
-        return HttpResponseRedirect(reverse('login_auth'))
-
-
-def login_auth(request):
 
     return render(request, 'login_auth.html')
 
@@ -97,18 +105,18 @@ def register_auth(request):
                 'message': 'Email existente. Tente outro!'
             })
 
-        print(f"Informação: {str(user_info)}")
+        #print(f"Informação: {str(user_info)}")
 
         if success:
 
-            return HttpResponseRedirect(reverse('index_auth'))
+            #return HttpResponseRedirect(reverse('index_auth'))
 
-            """ return render(request, 'auth.html', {
+            return render(request, 'auth.html', {
                 'message': 'Admin criado com sucesso',
                 "user_info": user_info,
                 'email_manager': email_manager
 
-            }) """
+            })
 
     return render(request, "register_auth.html", {
         "user_info": user_info,
@@ -152,6 +160,7 @@ def view_user_by_id(request, id_user):
 
     person_data = []
     user_data = []
+    resident_data = []
 
     for person in persons_ref.each():
         for user in users_ref.each():
@@ -162,10 +171,51 @@ def view_user_by_id(request, id_user):
             if user.val()['id'] == id_user:
                 user_data = user.val()
 
+    for resident in resident_ref.each():
+
+        if resident.val()['id'] == id_user:
+            resident_data = resident.val()
+
     return render(request, 'view_user_by_id.html', {
 
         'user_data': user_data,
         'person_data': person_data,
+        'resident_data': resident_data
+    })
+
+
+def set_owner_residence(request, id_user):
+
+    person_data = []
+    user_data = []
+    resident_data = []
+
+    for person in persons_ref.each():
+        for user in users_ref.each():
+
+            if person.val()['id'] == id_user:
+                person_data = person.val()
+
+            if user.val()['id'] == id_user:
+                user_data = user.val()
+
+    for resident in resident_ref.each():
+
+        if resident.val()['id'] == id_user:
+
+            resident_data = resident.val()
+
+            db.child('resident').child(resident.key()).update({
+
+                'owner': True,
+            })
+
+    return render(request, 'view_user_by_id.html', {
+
+        'user_data': user_data,
+        'person_data': person_data,
+        'resident_data': resident_data
+
     })
 
 

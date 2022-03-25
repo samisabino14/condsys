@@ -3,10 +3,12 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from firebase.views import db, users_ref, persons_ref, tokens_ref
+from firebase.views import db, auth, users_ref, persons_ref, tokens_ref
 import jwt
 import uuid
 from werkzeug.security import generate_password_hash, check_password_hash
+
+
 
 # Create your views here.
 
@@ -70,6 +72,7 @@ def register_view(request):
                         'id': uuid_user,
                         'street': street,
                         'house': house,
+                        'owner': False,
                         'status': False
                     }
 
@@ -126,13 +129,36 @@ def register_view(request):
                 'condsys_token'
             )) """
 
-            db.child('person').push(person_data)
-            db.child('users').push(user_data)
-            # db.child('tokens').push(token_user)
+            try:
+                success = auth.create_user_with_email_and_password(
+                    email, password)
+
+            except:
+                return render(request, 'register.html', {
+                    'message': 'Email existente. Tente outro!'
+                })
+
+            if success:
+                db.child('person').push(person_data)
+                db.child('users').push(user_data)
+                # db.child('tokens').push(token_user)
 
     return render(request, 'register.html')
 
 
 def users_view(request):
+
+    email = request.POST.get('email')
+    password = request.POST.get('password')
+
+    print(email, password)
+
+    try:
+        user = auth.sign_in_with_email_and_password(email, password)
+
+    except:
+
+        message = "Credenciais inválidas. Verifique os dados introduzidos."
+        return render(request, "login.html", {"message": message})
 
     return render(request, 'users.html')
